@@ -1,19 +1,20 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
+const User = require('./User');
 
-const RoutineSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
+const Routine = sequelize.define('Routine', {
     rawText: {
-        type: String,
-        required: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
+        type: DataTypes.TEXT,
+        allowNull: false,
+        validate: {
+            notEmpty: true
+        }
     }
+}, {
+    timestamps: true
 });
 
-module.exports = mongoose.model('Routine', RoutineSchema);
+User.hasOne(Routine, { foreignKey: 'userId', as: 'routine' });
+Routine.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+module.exports = Routine;

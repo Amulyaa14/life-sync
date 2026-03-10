@@ -1,9 +1,11 @@
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import DailyTasks from './pages/DailyTasks';
 import HealthTracker from './pages/HealthTracker';
 import RoutinePlanner from './pages/RoutinePlanner';
 import Analytics from './pages/Analytics';
+import Settings from './pages/Settings';
 
 // Simple NavLink to highlight active path
 const NavLink = ({ to, children }) => {
@@ -20,6 +22,27 @@ const NavLink = ({ to, children }) => {
 };
 
 function App() {
+  useEffect(() => {
+    const root = document.documentElement;
+    const saved = localStorage.getItem('lifeSyncPrefs');
+    let theme = 'System';
+    if (saved) {
+      theme = JSON.parse(saved).theme || 'System';
+    }
+
+    if (theme === 'Dark') {
+      root.classList.add('dark');
+    } else if (theme === 'Light') {
+      root.classList.remove('dark');
+    } else {
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+    }
+  }, []);
+
   return (
     <Router>
       <div className="min-h-screen flex bg-surface">
@@ -46,7 +69,7 @@ function App() {
             <Route path="/health" element={<HealthTracker />} />
             <Route path="/planner" element={<RoutinePlanner />} />
             <Route path="/analytics" element={<Analytics />} />
-            <Route path="/settings" element={<div className="text-2xl font-semibold">Settings (Coming Soon)</div>} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>
       </div>

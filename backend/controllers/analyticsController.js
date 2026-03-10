@@ -1,32 +1,41 @@
 const Schedule = require('../models/Schedule');
 const Task = require('../models/Task');
 const HealthLog = require('../models/HealthLog');
+const { Op } = require('sequelize');
 
 exports.getAnalytics = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user.id;
 
-        // Get date 7 days ago
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         oneWeekAgo.setHours(0, 0, 0, 0);
 
-        // 1. Weekly Productivity (Tasks Completed per Day)
-        const taskLogs = await Task.aggregate([
-            { $match: { user: userId, completed: true, updatedAt: { $gte: oneWeekAgo } } },
-            { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } }, count: { $sum: 1 } } },
-            { $sort: { _id: 1 } }
-        ]);
+        // 1. Weekly Productivity
+        const completedTasks = await Task.findAll({
+            where: { userId, completed: true, updatedAt: { [Op.gte]: oneWeekAgo } }
+        });
+
+        const prodMap = {};
+        completedTasks.forEach(task => {
+            const dateStr = task.updatedAt.toISOString().split('T')[0];
+            prodMap[dateStr] = (prodMap[dateStr] || 0) + 1;
+        });
+
+        const taskLogs = Object.keys(prodMap).map(date => ({ _id: date, count: prodMap[date] }));
+        taskLogs.sort((a, b) => a._id.localeCompare(b._id));
 
         // 2. Study Hours (Total study duration per day from Schedule)
-        const scheduleLogs = await Schedule.find({ user: userId, date: { $gte: oneWeekAgo } });
+        const scheduleLogs = await Schedule.findAll({
+            where: { userId, date: { [Op.gte]: oneWeekAgo } }
+        });
 
-        // Process block durations manually since they are strings like "06:00" - "08:00"
         const studyHoursByDate = {};
         scheduleLogs.forEach(schedule => {
-            const dateStr = schedule.date.toISOString().split('T')[0];
+            const dateStr = typeof schedule.date === 'string' ? schedule.date : schedule.date.toISOString().split('T')[0];
             let studyMins = 0;
-            schedule.blocks.forEach(block => {
+            const blocks = Array.isArray(schedule.blocks) ? schedule.blocks : JSON.parse(schedule.blocks || "[]");
+            blocks.forEach(block => {
                 if (block.type === 'study') {
                     const startParts = block.startTime.split(':');
                     const endParts = block.endTime.split(':');
@@ -40,10 +49,12 @@ exports.getAnalytics = async (req, res) => {
             studyHoursByDate[dateStr] = (studyMins / 60).toFixed(1);
         });
 
-        // 3. Health Statistics (Averages over last 7 days)
-        const healthLogs = await HealthLog.find({ user: userId, date: { $gte: oneWeekAgo } });
-        let totalWater = 0, totalSleep = 0, totalExercise = 0;
+        // 3. Health Statistics
+        const healthLogs = await HealthLog.findAll({
+            where: { userId, date: { [Op.gte]: oneWeekAgo } }
+        });
 
+        let totalWater = 0, totalSleep = 0, totalExercise = 0;
         healthLogs.forEach(log => {
             totalWater += log.waterIntake || 0;
             totalSleep += log.sleepHours || 0;

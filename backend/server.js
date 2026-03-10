@@ -1,11 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./config/db');
+const { connectDB, sequelize } = require('./config/db');
 
-// Connect Database
+// Connect to Database
 connectDB();
 
+// Initialize Express
 const app = express();
 
 // Middleware
@@ -25,6 +26,12 @@ app.get('/', (req, res) => {
     res.send('API is running...');
 });
 
+// Start Server after syncing models
 const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, console.log(`Server running on port ${PORT}`));
+sequelize.sync({ alter: true }).then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}).catch(err => {
+    console.error('Failed to sync db: ' + err.message);
+});

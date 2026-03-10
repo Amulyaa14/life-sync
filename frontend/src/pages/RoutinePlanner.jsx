@@ -36,11 +36,11 @@ const RoutinePlanner = () => {
 
     const getBlockColor = (type) => {
         switch (type) {
-            case 'study': return 'border-primary-500 bg-primary-50 text-primary-800';
-            case 'health': return 'border-success-500 bg-success-50 text-success-800';
-            case 'rest': return 'border-secondary-500 bg-secondary-50 text-secondary-800';
-            case 'work': return 'border-warning-500 bg-warning-50 text-warning-800';
-            default: return 'border-border bg-white text-text-muted';
+            case 'study': return 'border-primary-500 bg-primary-500/10 text-primary-500';
+            case 'health': return 'border-success-500 bg-success-500/10 text-success-500';
+            case 'rest': return 'border-secondary-500 bg-secondary-500/10 text-secondary-500';
+            case 'work': return 'border-warning-500 bg-warning-500/10 text-warning-500';
+            default: return 'border-border bg-background text-text-muted';
         }
     };
 
@@ -94,7 +94,7 @@ const RoutinePlanner = () => {
                                     <div className={`p-4 rounded-xl border-l-4 shadow-sm ${getBlockColor(block.type)}`}>
                                         <div className="flex justify-between items-start mb-1">
                                             <h4 className="font-semibold">{block.title}</h4>
-                                            <span className="text-xs font-bold uppercase py-1 px-2 rounded-full bg-white bg-opacity-50 inline-block shadow-sm">
+                                            <span className="text-xs font-bold uppercase py-1 px-2 rounded-full bg-background/50 text-text inline-block shadow-sm">
                                                 {block.startTime} - {block.endTime}
                                             </span>
                                         </div>

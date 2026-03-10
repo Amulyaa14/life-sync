@@ -1,36 +1,41 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
+const User = require('./User'); // need to establish relationships
 
-const TaskSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
+const Task = sequelize.define('Task', {
     title: {
-        type: String,
-        required: true
-    },
-    category: {
-        type: String,
-        enum: ['Study', 'Health', 'Personal', 'Work', 'Other'],
-        default: 'Other'
-    },
-    priority: {
-        type: String,
-        enum: ['Low', 'Medium', 'High'],
-        default: 'Medium'
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true
+        }
     },
     completed: {
-        type: Boolean,
-        default: false
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     },
-    deadline: {
-        type: Date
+    category: {
+        type: DataTypes.STRING,
+        defaultValue: 'Other'
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
+    priority: {
+        type: DataTypes.ENUM('Low', 'Medium', 'High'),
+        defaultValue: 'Medium'
+    },
+    recurring: {
+        type: DataTypes.ENUM('None', 'Daily', 'Weekly'),
+        defaultValue: 'None'
+    },
+    lastRecurDate: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
     }
+}, {
+    timestamps: true
 });
 
-module.exports = mongoose.model('Task', TaskSchema);
+// Relationships
+User.hasMany(Task, { foreignKey: 'userId', as: 'tasks' });
+Task.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+module.exports = Task;

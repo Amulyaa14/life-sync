@@ -1,4 +1,5 @@
 const HealthLog = require('../models/HealthLog');
+const { Op } = require('sequelize');
 
 // Get today's health log for user
 exports.getTodayHealthLog = async (req, res) => {
@@ -7,13 +8,14 @@ exports.getTodayHealthLog = async (req, res) => {
         today.setHours(0, 0, 0, 0);
 
         let log = await HealthLog.findOne({
-            user: req.user._id,
-            date: { $gte: today }
+            where: {
+                userId: req.user.id,
+                date: { [Op.gte]: today }
+            }
         });
 
         if (!log) {
-            log = new HealthLog({ user: req.user._id, date: new Date() });
-            await log.save();
+            log = await HealthLog.create({ userId: req.user.id, date: new Date() });
         }
 
         res.json(log);
@@ -29,21 +31,19 @@ exports.updateHealthLog = async (req, res) => {
         today.setHours(0, 0, 0, 0);
 
         let log = await HealthLog.findOne({
-            user: req.user._id,
-            date: { $gte: today }
+            where: {
+                userId: req.user.id,
+                date: { [Op.gte]: today }
+            }
         });
 
         if (!log) {
-            log = new HealthLog({ user: req.user._id, date: new Date(), ...req.body });
+            log = await HealthLog.create({ userId: req.user.id, date: new Date(), ...req.body });
         } else {
-            if (req.body.waterIntake !== undefined) log.waterIntake = req.body.waterIntake;
-            if (req.body.exerciseMinutes !== undefined) log.exerciseMinutes = req.body.exerciseMinutes;
-            if (req.body.sleepHours !== undefined) log.sleepHours = req.body.sleepHours;
-            if (req.body.mood !== undefined) log.mood = req.body.mood;
+            await log.update(req.body);
         }
 
-        const updatedLog = await log.save();
-        res.json(updatedLog);
+        res.json(log);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }

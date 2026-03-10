@@ -1,32 +1,38 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
+const User = require('./User');
 
-const HealthLogSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
+const HealthLog = sequelize.define('HealthLog', {
     date: {
-        type: Date,
-        default: Date.now
+        type: DataTypes.DATEONLY,
+        allowNull: false
     },
     waterIntake: {
-        type: Number, // in glasses or ml
-        default: 0
-    },
-    exerciseMinutes: {
-        type: Number,
-        default: 0
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     },
     sleepHours: {
-        type: Number,
-        default: 0
+        type: DataTypes.FLOAT,
+        defaultValue: 0
+    },
+    exerciseMinutes: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     },
     mood: {
-        type: String,
-        enum: ['Great', 'Good', 'Okay', 'Bad', 'Terrible'],
-        default: 'Okay'
+        type: DataTypes.ENUM('Great', 'Good', 'Okay', 'Bad', 'Terrible'),
+        defaultValue: 'Good'
+    },
+    journalEntry: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: ''
     }
+}, {
+    timestamps: true
 });
 
-module.exports = mongoose.model('HealthLog', HealthLogSchema);
+User.hasMany(HealthLog, { foreignKey: 'userId', as: 'healthLogs' });
+HealthLog.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+module.exports = HealthLog;

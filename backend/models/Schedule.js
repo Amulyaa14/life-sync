@@ -1,31 +1,22 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
+const User = require('./User');
 
-const ScheduleBlockSchema = new mongoose.Schema({
-    title: String,
-    startTime: String, // e.g. '06:00'
-    endTime: String,   // e.g. '08:00'
-    type: {
-        type: String,
-        enum: ['study', 'health', 'rest', 'personal', 'work', 'other'],
-        default: 'other'
-    }
-});
-
-const ScheduleSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
+const Schedule = sequelize.define('Schedule', {
     date: {
-        type: Date,
-        required: true
+        type: DataTypes.DATEONLY,
+        allowNull: false
     },
-    blocks: [ScheduleBlockSchema],
-    createdAt: {
-        type: Date,
-        default: Date.now
+    blocks: {
+        type: DataTypes.JSON, // stores array of objects
+        allowNull: false,
+        defaultValue: []
     }
+}, {
+    timestamps: true
 });
 
-module.exports = mongoose.model('Schedule', ScheduleSchema);
+User.hasMany(Schedule, { foreignKey: 'userId', as: 'schedules' });
+Schedule.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+module.exports = Schedule;

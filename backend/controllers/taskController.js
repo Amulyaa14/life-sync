@@ -1,9 +1,45 @@
 const Task = require('../models/Task');
+const { Op } = require('sequelize');
 
-// Get all tasks for user
+// Get all tasks for user — also auto-generates recurring tasks if needed
 exports.getTasks = async (req, res) => {
     try {
-        const tasks = await Task.find({ user: req.user._id }).sort({ createdAt: -1 });
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        const dayOfWeek = new Date().getDay(); // 0=Sun, 1=Mon, ...
+
+        // Find recurring tasks that need to be re-created today
+        const recurringTasks = await Task.findAll({
+            where: {
+                userId: req.user.id,
+                recurring: { [Op.in]: ['Daily', 'Weekly'] },
+                lastRecurDate: { [Op.or]: [{ [Op.lt]: today }, { [Op.is]: null }] }
+            }
+        });
+
+        for (const task of recurringTasks) {
+            const shouldRecur = task.recurring === 'Daily' ||
+                (task.recurring === 'Weekly' && dayOfWeek === new Date(task.createdAt).getDay());
+
+            if (shouldRecur) {
+                // Create a fresh copy of the task for today
+                await Task.create({
+                    title: task.title,
+                    category: task.category,
+                    priority: task.priority,
+                    recurring: task.recurring,
+                    lastRecurDate: today,
+                    userId: req.user.id,
+                    completed: false
+                });
+                // Mark the template task as last run today
+                await task.update({ lastRecurDate: today });
+            }
+        }
+
+        const tasks = await Task.findAll({
+            where: { userId: req.user.id },
+            order: [['createdAt', 'DESC']]
+        });
         res.json(tasks);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -13,11 +49,10 @@ exports.getTasks = async (req, res) => {
 // Create a task
 exports.createTask = async (req, res) => {
     try {
-        const task = new Task({
+        const createdTask = await Task.create({
             ...req.body,
-            user: req.user._id
+            userId: req.user.id
         });
-        const createdTask = await task.save();
         res.status(201).json(createdTask);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -27,12 +62,12 @@ exports.createTask = async (req, res) => {
 // Update a task (e.g. mark complete)
 exports.updateTask = async (req, res) => {
     try {
-        const task = await Task.findById(req.params.id);
+        const task = await Task.findByPk(req.params.id);
         if (!task) return res.status(404).json({ message: 'Task not found' });
-        if (task.user.toString() !== req.user._id.toString()) return res.status(401).json({ message: 'Not authorized' });
+        if (task.userId !== req.user.id) return res.status(401).json({ message: 'Not authorized' });
 
-        const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.json(updatedTask);
+        await task.update(req.body);
+        res.json(task);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -41,11 +76,11 @@ exports.updateTask = async (req, res) => {
 // Delete a task
 exports.deleteTask = async (req, res) => {
     try {
-        const task = await Task.findById(req.params.id);
+        const task = await Task.findByPk(req.params.id);
         if (!task) return res.status(404).json({ message: 'Task not found' });
-        if (task.user.toString() !== req.user._id.toString()) return res.status(401).json({ message: 'Not authorized' });
+        if (task.userId !== req.user.id) return res.status(401).json({ message: 'Not authorized' });
 
-        await task.deleteOne();
+        await task.destroy();
         res.json({ message: 'Task removed' });
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -1,16 +1,98 @@
-import React, { useEffect, useState } from 'react';
-import { Plus, Check, Trash2, Clock } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { Plus, Check, Trash2, Clock } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { Plus, Check, Trash2, Clock, Play, Pause, X, Coffee, RefreshCw, Repeat } from 'lucide-react';
 import api from '../api/axios';
 import useNotifications from '../hooks/useNotifications';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Sortable Task Item component
+const SortableTask = ({ task, onToggle, onDelete, onPomodoro }) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={`bg-background p-4 rounded-xl shadow-sm border border-border flex items-center justify-between transition ${task.completed ? 'opacity-60' : ''}`}
+        >
+            <div className="flex items-center space-x-3">
+                {/* Drag Handle */}
+                <div {...attributes} {...listeners} className="cursor-grab text-text-muted hover:text-text p-1 touch-none">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                        <circle cx="4" cy="3" r="1.5" /><circle cx="10" cy="3" r="1.5" />
+                        <circle cx="4" cy="7" r="1.5" /><circle cx="10" cy="7" r="1.5" />
+                        <circle cx="4" cy="11" r="1.5" /><circle cx="10" cy="11" r="1.5" />
+                    </svg>
+                </div>
+                <button
+                    onClick={() => onToggle(task.id, task.completed)}
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${task.completed ? 'bg-success-500 border-success-500 text-white' : 'border-text-muted text-transparent hover:border-primary-500'}`}
+                >
+                    <Check size={14} />
+                </button>
+                <div>
+                    <div className="flex items-center gap-2">
+                        <h4 className={`text-base font-medium ${task.completed ? 'line-through text-text-muted' : 'text-text'}`}>{task.title}</h4>
+                        {task.recurring !== 'None' && (
+                            <span className="flex items-center text-xs text-primary-500 bg-primary-500/10 px-2 py-0.5 rounded-full">
+                                <Repeat size={10} className="mr-1" />{task.recurring}
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex space-x-2 text-xs mt-1">
+                        <span className="bg-surface px-2 py-0.5 rounded text-text-muted">{task.category}</span>
+                        <span className={`px-2 py-0.5 rounded ${task.priority === 'High' ? 'bg-danger-500/10 text-danger-500' : task.priority === 'Medium' ? 'bg-warning-500/10 text-warning-500' : 'bg-success-500/10 text-success-500'}`}>
+                            {task.priority} Priority
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div className="flex items-center space-x-1 flex-shrink-0">
+                {!task.completed && (
+                    <button onClick={() => onPomodoro(task)} className="text-text-muted hover:text-primary-500 transition p-2" title="Start Pomodoro">
+                        <Clock size={17} />
+                    </button>
+                )}
+                <button onClick={() => onDelete(task.id)} className="text-text-muted hover:text-danger-500 transition p-2">
+                    <Trash2 size={17} />
+                </button>
+            </div>
+        </div>
+    );
+};
 
 const DailyTasks = () => {
     const [tasks, setTasks] = useState([]);
     const [newTask, setNewTask] = useState('');
     const [category, setCategory] = useState('Study');
     const [priority, setPriority] = useState('Medium');
+    const [recurring, setRecurring] = useState('None');
     const { sendNotification } = useNotifications();
+
+    // DnD sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
 
     const fetchTasks = async () => {
         try {
@@ -21,16 +103,46 @@ const DailyTasks = () => {
         }
     };
 
+    // --- POMODORO TIMER STATE ---
+    const [activeTask, setActiveTask] = useState(null);
+    const [timeLeft, setTimeLeft] = useState(25 * 60);
+    const [isRunning, setIsRunning] = useState(false);
+    const [timerMode, setTimerMode] = useState('focus');
+    const timerRef = useRef(null);
+
+    useEffect(() => {
+        if (isRunning && timeLeft > 0) {
+            timerRef.current = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+        } else if (timeLeft === 0) {
+            setIsRunning(false);
+            clearInterval(timerRef.current);
+            if (timerMode === 'focus') {
+                sendNotification('Pomodoro Complete!', { body: 'Time for a 5-minute break.' });
+                setTimerMode('break');
+                setTimeLeft(5 * 60);
+            } else {
+                sendNotification('Break Over!', { body: 'Ready to focus again?' });
+                setTimerMode('focus');
+                setTimeLeft(25 * 60);
+            }
+        }
+        return () => clearInterval(timerRef.current);
+    }, [isRunning, timeLeft, timerMode]);
+
+    const formatTime = (s) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
+    const toggleTimer = () => setIsRunning(!isRunning);
+    const resetTimer = () => { setIsRunning(false); setTimeLeft(timerMode === 'focus' ? 25 * 60 : 5 * 60); };
+    const startPomodoro = (task) => { setActiveTask(task); setTimerMode('focus'); setTimeLeft(25 * 60); setIsRunning(false); };
+    const closePomodoro = () => { setIsRunning(false); setActiveTask(null); };
+
     useEffect(() => { fetchTasks(); }, []);
 
     const handleAdd = async (e) => {
         e.preventDefault();
         if (!newTask.trim()) return;
         try {
-            await api.post('/tasks', { title: newTask, category, priority });
-            if (priority === 'High') {
-                sendNotification('High Priority Task Added', { body: `Don't forget: ${newTask}` });
-            }
+            await api.post('/tasks', { title: newTask, category, priority, recurring });
+            if (priority === 'High') sendNotification('High Priority Task Added', { body: `Don't forget: ${newTask}` });
             setNewTask('');
             fetchTasks();
         } catch (error) {
@@ -42,17 +154,22 @@ const DailyTasks = () => {
         try {
             await api.put(`/tasks/${id}`, { completed: !currentStatus });
             fetchTasks();
-        } catch (error) {
-            console.error(error);
-        }
+        } catch (error) { console.error(error); }
     };
 
     const handleDelete = async (id) => {
         try {
             await api.delete(`/tasks/${id}`);
-            fetchTasks();
-        } catch (error) {
-            console.error(error);
+            setTasks(prev => prev.filter(t => t.id !== id));
+        } catch (error) { console.error(error); }
+    };
+
+    const handleDragEnd = (event) => {
+        const { active, over } = event;
+        if (active.id !== over?.id) {
+            const oldIndex = tasks.findIndex(t => t.id === active.id);
+            const newIndex = tasks.findIndex(t => t.id === over.id);
+            setTasks(arrayMove(tasks, oldIndex, newIndex));
         }
     };
 
@@ -60,7 +177,7 @@ const DailyTasks = () => {
         <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold text-text mb-8">Daily Tasks</h1>
 
-            <form onSubmit={handleAdd} className="bg-white p-6 rounded-2xl shadow-sm border border-border mb-8">
+            <form onSubmit={handleAdd} className="bg-background p-6 rounded-2xl shadow-sm border border-border mb-8">
                 <div className="flex flex-col md:flex-row gap-4">
                     <input
                         type="text"
@@ -81,44 +198,63 @@ const DailyTasks = () => {
                         <option>Medium</option>
                         <option>High</option>
                     </select>
+                    <select value={recurring} onChange={e => setRecurring(e.target.value)} className="px-4 py-2 border border-border rounded-lg bg-surface text-text outline-none" title="Repeat">
+                        <option value="None">Once</option>
+                        <option value="Daily">Daily 🔁</option>
+                        <option value="Weekly">Weekly 📅</option>
+                    </select>
                     <button type="submit" className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition flex items-center justify-center">
                         <Plus size={20} className="mr-1" /> Add
                     </button>
                 </div>
             </form>
 
-            <div className="space-y-4">
-                {tasks.map(task => (
-                    <div key={task._id} className={`bg-white p-4 rounded-xl shadow-sm border border-border flex items-center justify-between transition ${task.completed ? 'opacity-60' : ''}`}>
-                        <div className="flex items-center space-x-4">
-                            <button
-                                onClick={() => handleToggle(task._id, task.completed)}
-                                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${task.completed ? 'bg-success-500 border-success-500 text-white' : 'border-text-muted text-transparent hover:border-primary-500'}`}
-                            >
-                                <Check size={14} />
-                            </button>
-                            <div>
-                                <h4 className={`text-lg font-medium ${task.completed ? 'line-through text-text-muted' : 'text-text'}`}>{task.title}</h4>
-                                <div className="flex space-x-3 text-xs mt-1">
-                                    <span className="bg-surface px-2 py-0.5 rounded text-text-muted">{task.category}</span>
-                                    <span className={`px-2 py-0.5 rounded ${task.priority === 'High' ? 'bg-danger-500/10 text-danger-500' : task.priority === 'Medium' ? 'bg-warning-500/10 text-warning-500' : 'bg-success-500/10 text-success-500'}`}>
-                                        {task.priority} Priority
-                                    </span>
-                                </div>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+                    <div className="space-y-3">
+                        {tasks.map(task => (
+                            <SortableTask
+                                key={task.id}
+                                task={task}
+                                onToggle={handleToggle}
+                                onDelete={handleDelete}
+                                onPomodoro={startPomodoro}
+                            />
+                        ))}
+                        {tasks.length === 0 && (
+                            <div className="text-center py-12 text-text-muted">
+                                <Check className="mx-auto mb-3 opacity-50" size={48} />
+                                <p>You're all caught up! Enjoy your day.</p>
                             </div>
+                        )}
+                    </div>
+                </SortableContext>
+            </DndContext>
+
+            {/* Floating Pomodoro Widget */}
+            {activeTask && (
+                <div className="fixed bottom-6 right-6 w-80 bg-background border border-border rounded-2xl shadow-2xl overflow-hidden z-50">
+                    <div className={`p-4 text-white flex justify-between items-center ${timerMode === 'focus' ? 'bg-primary-600' : 'bg-success-500'}`}>
+                        <div className="flex items-center space-x-2">
+                            {timerMode === 'focus' ? <Clock size={18} /> : <Coffee size={18} />}
+                            <span className="font-semibold">{timerMode === 'focus' ? '🍅 Focus Time' : '☕ Break Time'}</span>
                         </div>
-                        <button onClick={() => handleDelete(task._id)} className="text-text-muted hover:text-danger-500 transition p-2">
-                            <Trash2 size={18} />
-                        </button>
+                        <button onClick={closePomodoro} className="text-white/70 hover:text-white"><X size={18} /></button>
                     </div>
-                ))}
-                {tasks.length === 0 && (
-                    <div className="text-center py-12 text-text-muted">
-                        <Check className="mx-auto mb-3 opacity-50" size={48} />
-                        <p>You're all caught up! Enjoy your day.</p>
+                    <div className="p-6 flex flex-col items-center">
+                        <p className="text-sm text-text-muted mb-3 text-center truncate w-full">{activeTask.title}</p>
+                        <div className="text-6xl font-bold tracking-tight text-text mb-6">{formatTime(timeLeft)}</div>
+                        <div className="flex space-x-4">
+                            <button onClick={toggleTimer} className={`p-4 rounded-full text-white shadow-md hover:scale-105 transition-transform ${isRunning ? 'bg-warning-500' : 'bg-primary-600'}`}>
+                                {isRunning ? <Pause size={24} /> : <Play size={24} className="ml-0.5" />}
+                            </button>
+                            <button onClick={resetTimer} className="p-4 rounded-full bg-surface text-text hover:bg-border transition-colors shadow-sm">
+                                <RefreshCw size={20} />
+                            </button>
+                        </div>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -120,10 +120,10 @@ const Analytics = () => {
     };
 
     return (
-        <div className="max-w-6xl mx-auto space-y-8">
-            <h1 className="text-3xl font-bold text-text">Analytics Overview</h1>
+        <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
+            <h1 className="text-2xl md:text-3xl font-bold text-text">Analytics Overview</h1>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-8">
                 {/* Weekly Productivity Chart */}
                 <div className="bg-background p-4 sm:p-6 rounded-2xl shadow-sm border border-border h-72 sm:h-80">
                     <h3 className="text-lg font-medium text-text-muted mb-4">Weekly Productivity</h3>

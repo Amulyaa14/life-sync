@@ -98,12 +98,12 @@ const Dashboard = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <h1 className="text-2xl sm:text-3xl font-bold text-text">Welcome Back! ✨</h1>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <h1 className="text-2xl md:text-3xl font-bold text-text">Welcome Back! ✨</h1>
                 {streak > 0 && (
-                    <div className="inline-flex items-center bg-warning-50 px-4 py-2 rounded-full border border-warning-200 shadow-sm" title={`${streak} Day Streak!`}>
-                        <Flame className="text-warning-500 mr-2" fill="currentColor" size={24} />
-                        <span className="font-bold text-warning-700 text-lg">{streak} Day Streak</span>
+                    <div className="flex items-center bg-warning-50 px-3 py-1.5 rounded-full border border-warning-200 shadow-sm">
+                        <Flame className="text-warning-500 mr-1.5" fill="currentColor" size={20} />
+                        <span className="font-bold text-warning-700 text-sm md:text-base">{streak} Day Streak</span>
                     </div>
                 )}
             </div>

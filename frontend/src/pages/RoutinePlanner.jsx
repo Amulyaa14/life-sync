@@ -103,13 +103,13 @@ const RoutinePlanner = () => {
     };
 
     return (
-        <div className="max-w-5xl mx-auto flex flex-col lg:flex-row gap-8">
+        <div className="max-w-5xl mx-auto flex flex-col lg:flex-row gap-6 lg:gap-8">
             {/* Input Section */}
-            <div className="lg:w-1/2">
-                <h1 className="text-3xl font-bold text-text mb-2">Routine Planner</h1>
-                <p className="text-text-muted mb-6">Describe your day naturally, and we will generate a timeline for you.</p>
+            <div className="w-full lg:w-1/2">
+                <h1 className="text-2xl md:text-3xl font-bold text-text mb-2">Routine Planner</h1>
+                <p className="text-text-muted mb-6 text-sm md:text-base">Describe your day naturally, and we will generate a timeline for you.</p>
 
-                <form onSubmit={handleGenerate} className="bg-white p-6 rounded-2xl shadow-sm border border-border">
+                <form onSubmit={handleGenerate} className="bg-background p-6 rounded-2xl shadow-sm border border-border">
                     <label className="block text-sm font-medium text-text mb-2">Natural Routine Input</label>
                     <textarea
                         rows="5"
@@ -130,8 +130,8 @@ const RoutinePlanner = () => {
             </div>
 
             {/* Timeline Section */}
-            <div className="lg:w-1/2">
-                <div className="bg-surface rounded-2xl p-6 min-h-[500px]">
+            <div className="w-full lg:w-1/2">
+                <div className="bg-surface rounded-2xl p-5 md:p-6 max-h-[70vh] lg:max-h-[none] overflow-y-auto">
                     <h2 className="text-xl font-bold text-text mb-6 flex items-center">
                         <Layers className="mr-2 text-primary-500" size={24} />
                         Today's Timeline

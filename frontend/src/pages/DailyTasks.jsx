@@ -175,37 +175,39 @@ const DailyTasks = () => {
 
     return (
         <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold text-text mb-8">Daily Tasks</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-text mb-6 md:mb-8">Daily Tasks</h1>
 
-            <form onSubmit={handleAdd} className="bg-background p-6 rounded-2xl shadow-sm border border-border mb-8">
-                <div className="flex flex-col md:flex-row gap-4">
+            <form onSubmit={handleAdd} className="bg-background p-4 md:p-6 rounded-2xl shadow-sm border border-border mb-6 md:mb-8">
+                <div className="flex flex-col gap-3">
                     <input
                         type="text"
                         placeholder="What do you need to do?"
                         value={newTask}
                         onChange={(e) => setNewTask(e.target.value)}
-                        className="flex-1 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-surface text-text"
+                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-surface text-text"
                     />
-                    <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-2 border border-border rounded-lg bg-surface text-text outline-none">
-                        <option>Study</option>
-                        <option>Health</option>
-                        <option>Personal</option>
-                        <option>Work</option>
-                        <option>Other</option>
-                    </select>
-                    <select value={priority} onChange={e => setPriority(e.target.value)} className="px-4 py-2 border border-border rounded-lg bg-surface text-text outline-none">
-                        <option>Low</option>
-                        <option>Medium</option>
-                        <option>High</option>
-                    </select>
-                    <select value={recurring} onChange={e => setRecurring(e.target.value)} className="px-4 py-2 border border-border rounded-lg bg-surface text-text outline-none" title="Repeat">
-                        <option value="None">Once</option>
-                        <option value="Daily">Daily 🔁</option>
-                        <option value="Weekly">Weekly 📅</option>
-                    </select>
-                    <button type="submit" className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition flex items-center justify-center">
-                        <Plus size={20} className="mr-1" /> Add
-                    </button>
+                    <div className="flex flex-wrap gap-3">
+                        <select value={category} onChange={e => setCategory(e.target.value)} className="flex-1 min-w-[120px] px-4 py-2 border border-border rounded-lg bg-surface text-text outline-none">
+                            <option>Study</option>
+                            <option>Health</option>
+                            <option>Personal</option>
+                            <option>Work</option>
+                            <option>Other</option>
+                        </select>
+                        <select value={priority} onChange={e => setPriority(e.target.value)} className="flex-1 min-w-[120px] px-4 py-2 border border-border rounded-lg bg-surface text-text outline-none">
+                            <option>Low</option>
+                            <option>Medium</option>
+                            <option>High</option>
+                        </select>
+                        <select value={recurring} onChange={e => setRecurring(e.target.value)} className="flex-1 min-w-[120px] px-4 py-2 border border-border rounded-lg bg-surface text-text outline-none" title="Repeat">
+                            <option value="None">Once</option>
+                            <option value="Daily">Daily 🔁</option>
+                            <option value="Weekly">Weekly 📅</option>
+                        </select>
+                        <button type="submit" className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition flex items-center justify-center w-full sm:w-auto">
+                            <Plus size={20} className="mr-1" /> Add
+                        </button>
+                    </div>
                 </div>
             </form>
 
@@ -231,9 +233,9 @@ const DailyTasks = () => {
                 </SortableContext>
             </DndContext>
 
-            {/* Floating Pomodoro Widget */}
+            {/* Floating Pomodoro Widget — bottom-center on mobile, bottom-right on desktop */}
             {activeTask && (
-                <div className="fixed bottom-24 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 w-auto sm:w-80 bg-background border border-border rounded-2xl shadow-2xl overflow-hidden z-50">
+                <div className="fixed bottom-20 left-1/2 -translate-x-1/2 lg:bottom-6 lg:left-auto lg:right-6 lg:translate-x-0 w-[90vw] max-w-xs bg-background border border-border rounded-2xl shadow-2xl overflow-hidden z-50">
                     <div className={`p-4 text-white flex justify-between items-center ${timerMode === 'focus' ? 'bg-primary-600' : 'bg-success-500'}`}>
                         <div className="flex items-center space-x-2">
                             {timerMode === 'focus' ? <Clock size={18} /> : <Coffee size={18} />}

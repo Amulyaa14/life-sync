@@ -41,7 +41,7 @@ const Settings = () => {
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
-            <h1 className="text-3xl font-bold text-text mb-8">Settings</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-text mb-6 md:mb-8">Settings</h1>
 
             <div className="bg-background p-4 sm:p-6 rounded-2xl shadow-sm border border-border space-y-6">
 

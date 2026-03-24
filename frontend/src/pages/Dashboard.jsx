@@ -98,10 +98,10 @@ const Dashboard = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold text-text">Welcome Back! ✨</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <h1 className="text-2xl sm:text-3xl font-bold text-text">Welcome Back! ✨</h1>
                 {streak > 0 && (
-                    <div className="flex items-center bg-warning-50 px-4 py-2 rounded-full border border-warning-200 shadow-sm" title={`${streak} Day Streak!`}>
+                    <div className="inline-flex items-center bg-warning-50 px-4 py-2 rounded-full border border-warning-200 shadow-sm" title={`${streak} Day Streak!`}>
                         <Flame className="text-warning-500 mr-2" fill="currentColor" size={24} />
                         <span className="font-bold text-warning-700 text-lg">{streak} Day Streak</span>
                     </div>
@@ -110,7 +110,7 @@ const Dashboard = () => {
 
             {/* Progress Overview Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-background rounded-2xl p-6 shadow-sm border border-border">
+                <div className="bg-background rounded-2xl p-4 sm:p-6 shadow-sm border border-border">
                     <div className="flex items-center justify-between">
                         <h3 className="text-lg font-medium text-text-muted">Daily Tasks</h3>
                         <CheckCircle className="text-primary-500" size={24} />
@@ -127,7 +127,7 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                <div className="bg-background rounded-2xl p-6 shadow-sm border border-border">
+                <div className="bg-background rounded-2xl p-4 sm:p-6 shadow-sm border border-border">
                     <div className="flex items-center justify-between">
                         <h3 className="text-lg font-medium text-text-muted">Current Schedule</h3>
                         <Sun className="text-warning-500" size={24} />
@@ -137,8 +137,8 @@ const Dashboard = () => {
                             <div className="space-y-3">
                                 {schedule.blocks.slice(0, 2).map((b, i) => (
                                     <div key={i} className="flex justify-between items-center text-sm">
-                                        <span className="font-medium">{b.title}</span>
-                                        <span className="text-text-muted">{b.startTime}</span>
+                                        <span className="font-medium truncate pr-3">{b.title}</span>
+                                        <span className="text-text-muted flex-shrink-0">{b.startTime}</span>
                                     </div>
                                 ))}
                                 <Link to="/planner" className="inline-block text-xs text-primary-600 font-medium hover:underline mt-1">View full timeline →</Link>
@@ -149,7 +149,7 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                <div className="bg-background rounded-2xl p-6 shadow-sm border border-border flex flex-col justify-between">
+                <div className="bg-background rounded-2xl p-4 sm:p-6 shadow-sm border border-border flex flex-col justify-between">
                     <div className="flex items-center justify-between">
                         <h3 className="text-lg font-medium text-text-muted">Health Summary</h3>
                         <Activity className="text-danger-500" size={24} />
@@ -177,7 +177,7 @@ const Dashboard = () => {
             {/* Smart Widgets Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Quote of the Day */}
-                <div className="bg-background rounded-2xl p-6 shadow-sm border border-border flex items-start space-x-4">
+                <div className="bg-background rounded-2xl p-4 sm:p-6 shadow-sm border border-border flex items-start space-x-4">
                     <Quote className="text-secondary-500 flex-shrink-0 mt-1" size={28} />
                     <div>
                         <p className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">Quote of the Day</p>
@@ -187,14 +187,14 @@ const Dashboard = () => {
                 </div>
 
                 {/* Weather Widget */}
-                <div className="bg-background rounded-2xl p-6 shadow-sm border border-border">
+                <div className="bg-background rounded-2xl p-4 sm:p-6 shadow-sm border border-border">
                     <p className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-3">Current Weather</p>
                     {weather ? (
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div className="flex items-center space-x-4">
                                 <CloudSun className="text-warning-500" size={48} />
                                 <div>
-                                    <p className="text-4xl font-bold text-text">{weather.temperature}°C</p>
+                                    <p className="text-3xl sm:text-4xl font-bold text-text">{weather.temperature}°C</p>
                                     <p className="text-text-muted text-sm">Windspeed {weather.windspeed} km/h</p>
                                 </div>
                             </div>

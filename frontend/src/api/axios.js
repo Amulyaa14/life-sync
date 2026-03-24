@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const baseURL = configuredBaseUrl && configuredBaseUrl.trim().length > 0
+    ? configuredBaseUrl
+    : 'http://localhost:5000/api';
+
 const api = axios.create({
-    baseURL: 'http://localhost:5000/api',
+    baseURL,
 });
 
 // Since we have a mock protect middleware that auto-assigns a user, 

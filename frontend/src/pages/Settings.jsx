@@ -17,6 +17,7 @@ const Settings = () => {
 
     const handleSave = () => {
         localStorage.setItem('lifeSyncPrefs', JSON.stringify(preferences));
+        window.dispatchEvent(new CustomEvent('lifesync-preferences-updated', { detail: preferences }));
 
         const root = document.documentElement;
         if (preferences.theme === 'Dark') {
@@ -42,11 +43,11 @@ const Settings = () => {
         <div className="max-w-4xl mx-auto space-y-8">
             <h1 className="text-3xl font-bold text-text mb-8">Settings</h1>
 
-            <div className="bg-background p-6 rounded-2xl shadow-sm border border-border space-y-6">
+            <div className="bg-background p-4 sm:p-6 rounded-2xl shadow-sm border border-border space-y-6">
 
                 {/* Notifications */}
-                <div className="flex items-center justify-between border-b border-border pb-6">
-                    <div className="flex items-center space-x-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
+                    <div className="flex items-center space-x-4 min-w-0">
                         <div className="p-3 bg-primary-100 text-primary-600 rounded-xl"><BellRing size={24} /></div>
                         <div>
                             <h3 className="text-lg font-medium text-text">Push Notifications</h3>
@@ -60,8 +61,8 @@ const Settings = () => {
                 </div>
 
                 {/* Theme */}
-                <div className="flex items-center justify-between border-b border-border pb-6">
-                    <div className="flex items-center space-x-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
+                    <div className="flex items-center space-x-4 min-w-0">
                         <div className="p-3 bg-secondary-50 text-secondary-600 rounded-xl"><Monitor size={24} /></div>
                         <div>
                             <h3 className="text-lg font-medium text-text">App Theme</h3>
@@ -80,15 +81,15 @@ const Settings = () => {
                 </div>
 
                 {/* Goals */}
-                <div className="flex items-center justify-between border-b border-border pb-6">
-                    <div className="flex items-center space-x-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
+                    <div className="flex items-center space-x-4 min-w-0">
                         <div className="p-3 bg-success-50 text-success-600 rounded-xl"><Sun size={24} /></div>
                         <div>
                             <h3 className="text-lg font-medium text-text">Daily Goals</h3>
                             <p className="text-sm text-text-muted">Adjust your target health metrics.</p>
                         </div>
                     </div>
-                    <div className="flex space-x-4">
+                    <div className="flex flex-wrap gap-4">
                         <div>
                             <label className="block text-xs text-text-muted mb-1">Water (Glasses)</label>
                             <input type="number" min="1" max="20" className="w-20 px-3 py-2 bg-surface border border-border rounded-lg text-text" value={preferences.waterGoal} onChange={e => setPreferences({ ...preferences, waterGoal: e.target.value })} />

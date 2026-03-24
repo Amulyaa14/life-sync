@@ -125,19 +125,19 @@ const Analytics = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Weekly Productivity Chart */}
-                <div className="bg-background p-6 rounded-2xl shadow-sm border border-border h-80">
+                <div className="bg-background p-4 sm:p-6 rounded-2xl shadow-sm border border-border h-72 sm:h-80">
                     <h3 className="text-lg font-medium text-text-muted mb-4">Weekly Productivity</h3>
                     <Bar data={barChartData} options={chartOptions} />
                 </div>
 
                 {/* Study Hours Chart */}
-                <div className="bg-background p-6 rounded-2xl shadow-sm border border-border h-80">
+                <div className="bg-background p-4 sm:p-6 rounded-2xl shadow-sm border border-border h-72 sm:h-80">
                     <h3 className="text-lg font-medium text-text-muted mb-4">Study Trends</h3>
                     <Line data={lineChartData} options={chartOptions} />
                 </div>
 
                 {/* Health Statistics Chart */}
-                <div className="bg-background p-6 rounded-2xl shadow-sm border border-border h-80 lg:col-span-2 flex flex-col items-center">
+                <div className="bg-background p-4 sm:p-6 rounded-2xl shadow-sm border border-border h-80 lg:col-span-2 flex flex-col items-center">
                     <h3 className="text-lg font-medium text-text-muted mb-4 self-start">Health Balance</h3>
                     <div className="h-full w-full max-w-md">
                         <Radar

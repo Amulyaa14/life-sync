@@ -233,7 +233,7 @@ const DailyTasks = () => {
 
             {/* Floating Pomodoro Widget */}
             {activeTask && (
-                <div className="fixed bottom-6 right-6 w-80 bg-background border border-border rounded-2xl shadow-2xl overflow-hidden z-50">
+                <div className="fixed bottom-24 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 w-auto sm:w-80 bg-background border border-border rounded-2xl shadow-2xl overflow-hidden z-50">
                     <div className={`p-4 text-white flex justify-between items-center ${timerMode === 'focus' ? 'bg-primary-600' : 'bg-success-500'}`}>
                         <div className="flex items-center space-x-2">
                             {timerMode === 'focus' ? <Clock size={18} /> : <Coffee size={18} />}

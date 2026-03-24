@@ -6,6 +6,8 @@ const RoutinePlanner = () => {
     const [text, setText] = useState('');
     const [schedule, setSchedule] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [savingReminderIndex, setSavingReminderIndex] = useState(null);
+    const [customReminderInputs, setCustomReminderInputs] = useState({});
 
     const fetchSchedule = async () => {
         try {
@@ -42,6 +44,62 @@ const RoutinePlanner = () => {
             case 'work': return 'border-warning-500 bg-warning-500/10 text-warning-500';
             default: return 'border-border bg-background text-text-muted';
         }
+    };
+
+    const parseReminderMinutes = (block) => {
+        const value = Number.parseInt(block?.reminder?.minutesBefore, 10);
+        return Number.isNaN(value) || value < 0 ? 10 : value;
+    };
+
+    const getReminderMode = (block) => {
+        if (block?.reminder?.enabled === false) return 'off';
+
+        const minutes = parseReminderMinutes(block);
+        if ([5, 10, 30].includes(minutes)) return String(minutes);
+
+        return 'custom';
+    };
+
+    const saveReminder = async (blockIndex, enabled, minutesBefore) => {
+        setSavingReminderIndex(blockIndex);
+        try {
+            const { data } = await api.put('/schedule/reminders', {
+                blockIndex,
+                enabled,
+                minutesBefore,
+            });
+
+            if (data?.schedule) {
+                setSchedule(data.schedule);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setSavingReminderIndex(null);
+        }
+    };
+
+    const handleReminderPresetChange = async (block, index, value) => {
+        if (value === 'off') {
+            await saveReminder(index, false, parseReminderMinutes(block));
+            return;
+        }
+
+        if (value === 'custom') {
+            setCustomReminderInputs((prev) => ({
+                ...prev,
+                [index]: parseReminderMinutes(block),
+            }));
+            return;
+        }
+
+        await saveReminder(index, true, Number.parseInt(value, 10));
+    };
+
+    const handleCustomReminderSave = async (index, fallbackMinutes) => {
+        const minutes = Number.parseInt(customReminderInputs[index], 10);
+        const normalizedMinutes = Number.isNaN(minutes) || minutes < 0 ? fallbackMinutes : minutes;
+        await saveReminder(index, true, normalizedMinutes);
     };
 
     return (
@@ -99,6 +157,45 @@ const RoutinePlanner = () => {
                                             </span>
                                         </div>
                                         <span className="text-xs font-medium uppercase opacity-70 mt-2 block">{block.type}</span>
+
+                                        <div className="mt-3 pt-3 border-t border-border/50">
+                                            <label className="text-xs font-semibold uppercase tracking-wide text-text-muted">Reminder</label>
+                                            <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-2">
+                                                <select
+                                                    value={getReminderMode(block)}
+                                                    onChange={(e) => handleReminderPresetChange(block, idx, e.target.value)}
+                                                    disabled={savingReminderIndex === idx}
+                                                    className="px-3 py-2 rounded-lg bg-background border border-border text-sm text-text"
+                                                >
+                                                    <option value="off">Off</option>
+                                                    <option value="5">5 minutes before</option>
+                                                    <option value="10">10 minutes before</option>
+                                                    <option value="30">30 minutes before</option>
+                                                    <option value="custom">Custom</option>
+                                                </select>
+
+                                                {getReminderMode(block) === 'custom' && (
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={customReminderInputs[idx] ?? parseReminderMinutes(block)}
+                                                            onChange={(e) => setCustomReminderInputs((prev) => ({ ...prev, [idx]: e.target.value }))}
+                                                            className="w-24 px-3 py-2 rounded-lg bg-background border border-border text-sm text-text"
+                                                        />
+                                                        <span className="text-xs text-text-muted">min</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleCustomReminderSave(idx, parseReminderMinutes(block))}
+                                                            disabled={savingReminderIndex === idx}
+                                                            className="px-3 py-2 rounded-lg bg-primary-600 text-white text-xs font-medium disabled:opacity-60"
+                                                        >
+                                                            Save
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             ))}

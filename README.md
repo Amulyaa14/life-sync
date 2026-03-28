@@ -1,12 +1,12 @@
 # Life Sync - Productivity App
 
-Life Sync is a full-stack personal productivity web application built using the MERN stack (MongoDB, Express, React, Node.js). 
+Life Sync is a full-stack personal productivity web application built using the Node.js, Express, React, and SQLite (via Sequelize). 
 It features a daily task manager, health tracker, and an AI-assisted natural-language routine planner that automatically generates schedules.
 
 ## Project Structure
 This repository is a monorepo containing two main directories:
 - `/frontend` - React application (Vite, Tailwind CSS, React Router, Axios)
-- `/backend` - Node.js Express API (Mongoose, dotenv, CORS)
+- `/backend` - Node.js Express API (Sequelize, SQLite, dotenv, CORS)
 
 ## Features
 - **Dashboard**: A unified view of your daily tasks, current schedule timeline, and health tracking summary.
@@ -18,7 +18,7 @@ This repository is a monorepo containing two main directories:
 
 ### Prerequisites
 - Node.js (v18+)
-- Local MongoDB running on `mongodb://127.0.0.1:27017` OR a MongoDB Atlas connection string.
+- SQLite (included, no separate installation required)
 
 ### 1. Backend Setup
 1. CD into the backend folder:
@@ -30,7 +30,7 @@ This repository is a monorepo containing two main directories:
    npm install
    ```
 3. Set up environment variables:
-   Create a `.env` file based on `.env.example` OR use the default `.env` file already generated. Ensure `MONGODB_URI` points to your active database.
+   Create a `.env` file based on `.env.example` OR use the default `.env` file already generated. 
 4. Start the backend development server:
    ```bash
    npm run dev
@@ -55,4 +55,4 @@ This repository is a monorepo containing two main directories:
 ## Tech Stack
 - Frontend: React 18+, Vite, Tailwind CSS v4, Lucide React (Icons), React Router DOM.
 - Backend: Node.js, Express.js
-- Database: MongoDB (via Mongoose)
+- Database: SQLite (via Sequelize)

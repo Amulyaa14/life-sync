@@ -30,11 +30,10 @@ app.get('/', (req, res) => {
 
 // Start Server after syncing models
 const PORT = process.env.PORT || 5000;
-sequelize.sync({ alter: true }).then(() => {
+sequelize.sync().then(() => {
     initializeTodayReminders().catch((error) => {
         console.error('Failed to initialize reminders: ' + error.message);
     });
-
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
     });

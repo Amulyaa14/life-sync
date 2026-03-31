@@ -17,6 +17,11 @@ const User = sequelize.define('User', {
     password: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    avatarUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg'
     }
 }, {
     timestamps: true

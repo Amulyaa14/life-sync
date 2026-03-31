@@ -17,6 +17,7 @@ app.use(express.json());
 const { protect } = require('./middleware/authMiddleware');
 
 // Mount Routes
+app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/tasks', protect, require('./routes/taskRoutes'));
 app.use('/api/health', protect, require('./routes/healthRoutes'));
 app.use('/api/schedule', protect, require('./routes/scheduleRoutes'));

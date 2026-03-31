@@ -28,7 +28,6 @@ const uploadAvatar = async (req, res) => {
 
         const user = await User.findByPk(req.user.id);
         if (user) {
-            // req.file.path contains the Cloudinary URL
             user.avatarUrl = req.file.path;
             await user.save();
             res.json({

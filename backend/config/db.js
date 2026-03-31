@@ -31,8 +31,7 @@ const connectDB = async () => {
     console.log(`${dialect.charAt(0).toUpperCase() + dialect.slice(1)} Database Connected successfully.`);
   } catch (error) {
     console.error('Unable to connect to the database:', error);
-    // Don't exit in development if DB fails, but maybe useful in production
-    if (process.env.NODE_ENV === 'production') process.exit(1);
+    process.exit(1);
   }
 };
 
